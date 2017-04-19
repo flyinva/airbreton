@@ -1,0 +1,67 @@
+#!/bin/bash
+
+set -eo pipefail
+[[ "$TRACE"  ]] && set -x
+
+
+# cat /tmp/19 | sed -e '/─/d' -e 's/│/,/g' -e 's/ \{2,\}//g' -e 's/^,//'
+# sed -e '/─/d' -e '/│[0-9]/!d' -e 's/│/,/g' -e 's/ \{2,\}//g' -e 's/^,//' /tmp/19
+
+retreive_data() {
+	local url="$1" ; shift
+	local tempfile=$(tempfile)
+
+	w3m -dump "$url" > $tempfile
+	echo $tempfile
+}
+
+date_to_epoc() {
+	local day="$1" ; shift
+	local hour="$1" ; shift
+	local date=()
+
+	date=(  ${day//\// } )
+	date -d"${date[2]}${date[1]}${date[0]} $hour" +%s
+}
+
+data_processing() {
+	local tempfile="$1"
+
+	local results=()
+	local day=""
+	local hour=""
+	local date=0
+
+	while read line ; do
+		results=( $line )
+		day="${results[0]}"
+		results=( ${results[@]:1} )
+		hour="${results[0]}"
+		results=( ${results[@]:1} )
+		date=$(date_to_epoc "$day" "$hour" )
+
+		printf "%s" $date
+		printf ",%s" ${results[@]}
+		printf "\n"
+	done < <(sed -e '/─/d' -e '/│[0-9]/!d' -e 's/│//g' -e 's/ \{2,\}/ /g' -e 's/^,//' $tempfile)
+}
+
+main() {
+	local url="$1" ; shift
+	local data_file="$1"
+
+	local tempfile=""
+
+	tempfile=$(retreive_data "$url")
+	data_processing $tempfile | sort > ${tempfile}_
+	mv ${tempfile}_ $tempfile
+
+	# ajoute uniquement les nouvelles lignes (celles qui ne sont pas communes à
+	# data_file et à tempfile
+	comm -13 $data_file ${tempfile}_ >> $data_file
+	rm $tempfile
+
+}
+
+[[ "$0" == "$BASH_SOURCE"  ]] && main "$@"
+
