@@ -53,12 +53,12 @@ main() {
 	local tempfile=""
 
 	tempfile=$(retreive_data "$url")
-	data_processing $tempfile | sort > ${tempfile}_
+	data_processing $tempfile | sort | uniq > ${tempfile}_
 	mv ${tempfile}_ $tempfile
 
 	# ajoute uniquement les nouvelles lignes (celles qui ne sont pas communes à
 	# data_file et à tempfile
-	comm -13 $data_file ${tempfile}_ >> $data_file
+	comm -13 $data_file ${tempfile} | sort | uniq >> $data_file
 	rm $tempfile
 
 }
