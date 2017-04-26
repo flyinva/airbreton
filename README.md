@@ -20,5 +20,5 @@ C'est écrit en BASH en prenant en compte [quelques bonnes pratiques](https://gi
 
 Les fichiers CSV sont lus par collectd. La configuration collectd associée est présente dans le fichier ``airbreizh.conf``. collectd envoie les données à graphite. Les paramètres de stockage carbon sont fournis dans le fichier ``storage-schemas.conf``.
 
-Les données sont exploitées dans Grafana.
+Les données sont exploitées dans Grafana un [exemple pour 2 stations de Rennes peut-être consulté](https://grafana.kabano.net/dashboard/db/pollution-atmospherique-rennes?orgId=2&from=now-7d&to=now).
 
